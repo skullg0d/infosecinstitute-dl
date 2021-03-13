@@ -105,15 +105,15 @@ def parseCourseLinks(body):
 		urls 			= {}
 		data 			= json.loads(body)
 		childrenNodes 	= data['data']['playlist']['children']
-		vidNumber		= 1
+		# vidNumber		= 1
 
 		for items in childrenNodes:
 			for singleChildren in items['children']:
 				name 	= singleChildren['name']
 				url 	= singleChildren['item_url']
 
-				urls[f"{vidNumber:03d}_{name}"] = url
-				vidNumber += 1
+				urls[f"{name}"] = url
+				# vidNumber += 1
 
 		if debug: print(urls)
 		return(urls)
@@ -232,12 +232,12 @@ def createCourseDirectory(name):
 	if not(os.path.isdir(courseDir)):
 		os.mkdir(courseDir)
 
-def downloadVideos(vidName, downloadLink, dirName):
+def downloadVideos(vidName, downloadLink, dirName, vidNumber):
 	"""
 	For downloading with aria2c
 	"""
-	vidName = re.sub('[\/:*?"<>|]','',vidName.strip())
-	# vidName 	= vidName.replace('/', '').replace(',', '').replace('"', '').replace("'", '').replace(' ', '_')
+	vidName = re.sub('[\/:*?"<>|]','',f"{vidNumber:03d}_{vidName}".strip())
+	# vidName 	= vidName.replace('/', '').replace(',', '').replace('"', '').replace("'", '').replace(' ', '_').replace(':','').strip()
 	fileName 	= f'{dirName}/{vidName}.mp4'
 
 	if os.path.isfile(fileName) and not(os.path.isfile(f"{fileName}.aria2")):
@@ -262,7 +262,7 @@ def runCommand(command):
 	os.system(command)
 
 def main(username,password):
-	global COOKIE_str
+
 	ddlURLs 	= []
 	host 		= "https://app.infosecinstitute.com"
 	loginURL 	= "https://app.infosecinstitute.com/portal/login"
@@ -281,8 +281,9 @@ def main(username,password):
 		print(f"\n[$] Name: {cyan}{courses[userInput]['name']}{white}")
 		print(f"[$] URL: {yellow}{courses[userInput]['url']}{white}")
 
-		dirName 	= courses[userInput]['name'].replace('/', '').replace(',', '').replace('"', '').replace("'", '')
-		createCourseDirectory(dirName)
+		# dirName 	= courses[userInput]['name'].replace('/', '').replace(',', '').replace('"', '').replace("'", '')
+		dirName    =  re.sub('[\/:*?"<>|]','',courses[userInput]['name'])
+		createCourseDirectory(dirName.strip())
 
 		print(f"\n{cyan}[*] Fetching path's description")
 		jsonBody 	= fetchCourseLinks(courses[userInput]['url'])
@@ -315,15 +316,17 @@ def main(username,password):
 		# with open('downloads.json', 'w+') as f: f.write(json.dumps(ddlURLs, indent=4, default=str))
 
 		print(f"\n{green}[*] Creating commands for downloading ...")
+		vidNumber = 1
 		for urls in ddlURLs:
 			for vidName, downloadLink in urls.items():
-				c 	= downloadVideos(vidName, downloadLink, dirName)
+				c 	= downloadVideos(vidName, downloadLink, dirName, vidNumber)
 				commands.append(c)
+				vidNumber+=1
 
 
 		print(f"\n{yellow}[&] Starting downloading ...{white}")
 
-		with concurrent.futures.ProcessPoolExecutor(max_workers = 5) as executor:
+		with concurrent.futures.ProcessPoolExecutor(max_workers = 1) as executor:
 			executor.map(runCommand, commands)
 
 	else:
