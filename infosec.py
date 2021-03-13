@@ -58,6 +58,8 @@ def login(loginURL, username, password):
 
 	flexcenter 	= response.headers['Set-Cookie'].split(";")[0].split("=")[1]
 	if debug: print(f"[#] Cookies: {flexcenter}")
+	print()
+	print("[#] Cookie: "+flexcenter)
 	return(flexcenter)
 
 def fetchCourseLinks(url):
@@ -125,7 +127,7 @@ def fetchCourses():
 	print(bar)
 
 	data 		= {}
-	pagesURL 	= "https://flex.infosecinstitute.com/portal/api/skills/search.json?type=path&page=1&limit=10000" 	# Fetches JSON containing all courses details/links
+	pagesURL 	= "https://app.infosecinstitute.com/portal/api/skills/search.json?type=path&page=1&limit=10000" 	# Fetches JSON containing all courses details/links
 	response 	= requests.get(pagesURL,
 		headers = HEADERS,
 		cookies = COOKIES,
@@ -160,17 +162,16 @@ def fetchCourses():
 		if debug: print(json.dumps(data, indent=4, default=str))
 		return(data)
 
-def returnVideoDownloadLink(host, vidURLs, videoName):
+def returnVideoDownloadLink(host, vidURLs, videoName, cookie):
 	"""
 	Returns S3 bucket's DDL for videos
 	"""
-
 	print(yellow, videoName, blue, vidURLs, white)
 
 	if not("/download?playlist_id=" in vidURLs):
 		response 	= requests.get(vidURLs,
 			headers = HEADERS,
-			cookies = COOKIES,
+			cookies = cookie,
 			# proxies = {
 			# 	'http': '127.0.0.1:8080',
 			# 	'https': '127.0.0.1:8080',
@@ -185,7 +186,7 @@ def returnVideoDownloadLink(host, vidURLs, videoName):
 
 			response 	= requests.get(ddlURL,
 				headers = HEADERS,
-				cookies = COOKIES,
+				cookies = cookie,
 				# proxies = {
 				# 	'http': '127.0.0.1:8080',
 				# 	'https': '127.0.0.1:8080',
@@ -207,7 +208,7 @@ def returnVideoDownloadLink(host, vidURLs, videoName):
 
 		response 	= requests.get(vidURLs,
 			headers = HEADERS,
-			cookies = COOKIES,
+			cookies = cookie,
 			allow_redirects = False,
 			# proxies = {
 			# 	'http': '127.0.0.1:8080',
@@ -242,11 +243,13 @@ def downloadVideos(vidName, downloadLink, dirName):
 		command = ""
 
 	elif "isPDF" in vidName:
-		command 	= f"aria2c -s 10 -j 10 -x 16 -k 5M --file-allocation=none '{downloadLink}' -d '{dirName}' -c"
+		# command = f'wget -O "{dirName}" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 0 -c --progress=bar:force:noscroll --no-check-certificate "{downloadLink}"'
+		command 	= f'aria2c -s 10 -j 10 -x 16 -k 5M --file-allocation=none "{downloadLink}" -d "{dirName}" -c'
 		# print(command)
 
 	else:
-		command 	= f"aria2c -s 10 -j 10 -x 16 -k 5M --file-allocation=none '{downloadLink}' -o '{fileName}' -c"
+		# command = f'wget -O "{fileName}" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 0 -c --progress=bar:force:noscroll --no-check-certificate "{downloadLink}"'
+		command 	= f'aria2c -s 10 -j 10 -x 16 -k 5M --file-allocation=none "{downloadLink}" -o "{fileName}" -c'
 		# print(f"\n{magenta}{command}{white}")
 		# os.system(command)
 		# print(command)
@@ -257,12 +260,13 @@ def runCommand(command):
 	os.system(command)
 
 def main():
+	global COOKIE_str
 	ddlURLs 	= []
-	host 		= "https://flex.infosecinstitute.com"
+	host 		= "https://app.infosecinstitute.com"
 	loginURL 	= "https://app.infosecinstitute.com/portal/login"
 
-	username 	= ""
-	password 	= ""
+	username 	= "jone@cmusicsxil.com"
+	password 	= "Robin1234"
 
 	if username == '' and password == '': exit("[!] Please edit and rerun the script with credentials")
 	cookies 				= login(loginURL, username, password)
@@ -299,7 +303,7 @@ def main():
 		print(f"{magenta}[*] Parsing video links for DDL (might take some time)")
 		print()
 		with concurrent.futures.ProcessPoolExecutor(max_workers = 50) as executor:
-			for results in executor.map(returnVideoDownloadLink, [host] * len(playlistURL), playlistURL, playlstName):
+			for results in executor.map(returnVideoDownloadLink, [host] * len(playlistURL), playlistURL, playlstName, [COOKIES] * len(playlistURL)):
 				if debug: print(results)
 				if results != None:
 					ddlURLs.append(results)
