@@ -5,6 +5,7 @@ import re
 import concurrent.futures
 import os
 from sys import argv
+import argparse
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -59,7 +60,7 @@ def login(loginURL, username, password):
 	flexcenter 	= response.headers['Set-Cookie'].split(";")[0].split("=")[1]
 	if debug: print(f"[#] Cookies: {flexcenter}")
 	print()
-	print("[#] Cookie: "+flexcenter)
+	print(f"{blue}[#] Cookie: {red}"+flexcenter)
 	return(flexcenter)
 
 def fetchCourseLinks(url):
@@ -259,14 +260,14 @@ def downloadVideos(vidName, downloadLink, dirName):
 def runCommand(command):
 	os.system(command)
 
-def main():
+def main(username,password):
 	global COOKIE_str
 	ddlURLs 	= []
 	host 		= "https://app.infosecinstitute.com"
 	loginURL 	= "https://app.infosecinstitute.com/portal/login"
 
-	username 	= "jone@cmusicsxil.com"
-	password 	= "Robin1234"
+	# username 	= ""
+	# password 	= ""
 
 	if username == '' and password == '': exit("[!] Please edit and rerun the script with credentials")
 	cookies 				= login(loginURL, username, password)
@@ -327,8 +328,12 @@ def main():
 	else:
 		print(f"[!] {red}Course not found! Please enter a correct and existing Course ID!{white}")
 
-if __name__ == '__main__':
+if __name__ == '__main__':	
+	print(f"[#] U&P Format => {red}<username>:<password> {white}Please follow the format while prompting for input.")
+	creds = input(f"[&] Enter you username and password: {red}")
+	username = creds.split(":")[0]
+	password = creds.split(":")[1]
 	try:
-		main()
+		main(username,password)
 	except KeyboardInterrupt:
 		print("[!] Okay-sed :(")

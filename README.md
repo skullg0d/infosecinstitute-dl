@@ -22,16 +22,10 @@ InfosecInstitute courses downloader. Requires **Python3** and **aria2** (for dow
 
 Infosec.py automates everything, it'll return the list of all [paths](https://flex.infosecinstitute.com/portal/skills/asset/path), user will enter the path ID, it'll create a new folder and will start downloading all the path files in there. 
 
-You also need to add your credentials in the script's main() function [L264](https://github.com/Anon-Exploiter/infosecinstitute-dl/blob/master/infosec.py#L264). The course link format is also given in the script.
+You need to pass the username and password as an argument while running your script.
 
-```python3
-def main():
-  ddlURLs 	= []
-  host 		= "..."
-  loginURL 	= "..."
-
-  username 	= ""
-  password 	= ""
+```
+Command: infosec.py -u <username> -p <password>
 ```
 
 ### Requirements
