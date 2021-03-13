@@ -236,7 +236,8 @@ def downloadVideos(vidName, downloadLink, dirName):
 	"""
 	For downloading with aria2c
 	"""
-	vidName 	= vidName.replace('/', '').replace(',', '').replace('"', '').replace("'", '').replace(' ', '_')
+	vidName = re.sub('[\/:*?"<>|]','',vidName.strip())
+	# vidName 	= vidName.replace('/', '').replace(',', '').replace('"', '').replace("'", '').replace(' ', '_')
 	fileName 	= f'{dirName}/{vidName}.mp4'
 
 	if os.path.isfile(fileName) and not(os.path.isfile(f"{fileName}.aria2")):
