@@ -326,7 +326,7 @@ def main(username,password):
 
 		print(f"\n{yellow}[&] Starting downloading ...{white}")
 
-		with concurrent.futures.ProcessPoolExecutor(max_workers = 1) as executor:
+		with concurrent.futures.ProcessPoolExecutor(max_workers = 5) as executor:
 			executor.map(runCommand, commands)
 
 	else:
