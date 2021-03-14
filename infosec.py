@@ -238,7 +238,7 @@ def downloadVideos(vidName, downloadLink, dirName, vidNumber):
 	"""
 	vidName = re.sub('[\/:*?"<>|]','',f"{vidNumber:03d}_{vidName}".strip())
 	# vidName 	= vidName.replace('/', '').replace(',', '').replace('"', '').replace("'", '').replace(' ', '_').replace(':','').strip()
-	fileName 	= f'{dirName}/{vidName}.mp4'
+	fileName 	= f'{dirName.strip()}/{vidName}.mp4'
 
 	if os.path.isfile(fileName) and not(os.path.isfile(f"{fileName}.aria2")):
 		print(f'{green}[#] {fileName} already exists!{white}')
